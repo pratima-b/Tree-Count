@@ -11,21 +11,17 @@ class ImageSeg:
         self.img = np.array(img)
 
     def find_red_marks(self):
-        # Convert image to HSV color space
         hsv_img = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
 
-        # Define color range for detecting red marks
         lower_red1 = np.array([0, 100, 100])
         upper_red1 = np.array([10, 255, 255])
         lower_red2 = np.array([160, 100, 100])
         upper_red2 = np.array([180, 255, 255])
 
-        # Create a mask for the red color
         mask1 = cv2.inRange(hsv_img, lower_red1, upper_red1)
         mask2 = cv2.inRange(hsv_img, lower_red2, upper_red2)
         mask = cv2.bitwise_or(mask1, mask2)
 
-        # Find contours of the red marks
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
@@ -38,23 +34,19 @@ class ImageSeg:
         marked_img = np.copy(self.img)
         for i, cnt in enumerate(contours):
             x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(marked_img, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw red rectangle
+            cv2.rectangle(marked_img, (x, y), (x + w, y + h), (255, 0, 0), 2)
             cv2.putText(marked_img, f'Tree {i+1}', (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
 
         return marked_img
 
     def color_filter(self):
-        # Convert image to HSV color space
         hsv_img = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
 
-        # Define color range for detecting trees (green color)
-        lower_bound = np.array([30, 40, 40])  # Lower bound for green color in HSV
-        upper_bound = np.array([90, 255, 255])  # Upper bound for green color in HSV
+        lower_bound = np.array([30, 40, 40])
+        upper_bound = np.array([90, 255, 255])
 
-        # Create a mask for the specified color range
         mask = cv2.inRange(hsv_img, lower_bound, upper_bound)
 
-        # Apply the mask to the original image
         filtered_img = cv2.bitwise_and(self.img, self.img, mask=mask)
 
         return filtered_img
@@ -66,7 +58,6 @@ class ImageSeg:
         return edges
 
     def post_process(self, edge_img):
-        # Apply morphological operations to clean up the binary image
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         closed_img = cv2.morphologyEx(edge_img, cv2.MORPH_CLOSE, kernel)
         opened_img = cv2.morphologyEx(closed_img, cv2.MORPH_OPEN, kernel)
@@ -77,7 +68,7 @@ class ImageSeg:
         edge_img = self.preprocess_img(filtered_img)
         processed_img = self.post_process(edge_img)
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(processed_img, connectivity=8)
-        return num_labels - 1  # Subtract 1 to exclude the background
+        return num_labels - 1  # Exclude the background
 
     def mark_trees_without_red_marks(self):
         filtered_img = self.color_filter()
@@ -86,9 +77,9 @@ class ImageSeg:
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(processed_img, connectivity=8)
         marked_img = np.copy(self.img)
 
-        for i in range(1, num_labels):  # Skip the background label
+        for i in range(1, num_labels):  # Skip the background
             x, y, w, h, _ = stats[i]
-            cv2.rectangle(marked_img, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw red rectangle
+            cv2.rectangle(marked_img, (x, y), (x + w, y + h), (255, 0, 0), 2)
             cv2.putText(marked_img, f'Tree {i}', (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
 
         return marked_img
@@ -108,9 +99,9 @@ class ImageSeg:
             return self.mark_trees_without_red_marks()
 
     def crop_image(self, x_start, y_start, width, height):
-        # Crop the image based on the provided coordinates
-        cropped_img = self.img[y_start:y_start+height, x_start:x_start+width]
+        cropped_img = self.img[y_start:y_start + height, x_start:x_start + width]
         return cropped_img
+
 
 # Streamlit App Configuration
 st.set_page_config(page_title="Tree View", page_icon="img.svg")
