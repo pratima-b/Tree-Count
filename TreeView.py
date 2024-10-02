@@ -112,6 +112,7 @@ class ImageSeg:
         cropped_img = self.img[y_start:y_start+height, x_start:x_start+width]
         return cropped_img
 
+# Streamlit App Configuration
 st.set_page_config(page_title="Tree View", page_icon="img.svg")
 
 # Streamlit Web App
@@ -125,8 +126,8 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file)
     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
+    # Display the original image
     st.write("### Uploaded Image:")
-    # Using columns to display images side by side
     col1, col2 = st.columns(2)
 
     with col1:
