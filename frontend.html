@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Counting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        img {
+            margin: 20px;
+            border: 2px solid #ddd;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Image for Tree Counting</h1>
+        <input type="file" id="image-file" accept="image/*">
+        <button onclick="processImage()">Process Image</button>
+
+        <div id="result">
+            <h2>Processed Image:</h2>
+            <img id="processed-image" src="" alt="Processed Image">
+            <h3>Tree Count: <span id="tree-count"></span></h3>
+        </div>
+    </div>
+
+    <script>
+        function processImage() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please upload an image.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/process-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    return;
+                }
+
+                const treeCount = document.getElementById('tree-count');
+                const processedImage = document.getElementById('processed-image');
+
+                // Update tree count
+                treeCount.textContent = data.tree_count;
+
+                // Convert the processed image back to displayable format
+                const binary = atob(data.processed_image);
+                const array = [];
+                for (let i = 0; i < binary.length; i++) {
+                    array.push(binary.charCodeAt(i));
+                }
+                const blob = new Blob([new Uint8Array(array)], { type: 'image/png' });
+                const imageUrl = URL.createObjectURL(blob);
+
+                // Display the processed image
+                processedImage.src = imageUrl;
+            })
+            .catch(error => {
+                console.error("Error processing image:", error);
+                alert("Error processing image.");
+            });
+        }
+    </script>
+</body>
+</html>
