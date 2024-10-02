@@ -140,6 +140,9 @@ if uploaded_file is not None:
     if crop_option == "Crop Image":
         st.write("### Crop the Image")
 
+        # Display original image clearly while allowing cropping
+        st.image(image, caption='Original Image', use_column_width=True)
+
         # Use `st_canvas` to allow user to draw a rectangle over the image
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",  # Transparent fill color for the crop box
